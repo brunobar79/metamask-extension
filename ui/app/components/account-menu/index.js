@@ -14,6 +14,7 @@ const {
   INFO_ROUTE,
   NEW_ACCOUNT_ROUTE,
   IMPORT_ACCOUNT_ROUTE,
+  CONNECT_ACCOUNT_ROUTE,
   DEFAULT_ROUTE,
 } = require('../../routes')
 
@@ -105,6 +106,14 @@ AccountMenu.prototype.render = function () {
       },
       icon: h('img.account-menu__item-icon', { src: 'images/import-account.svg' }),
       text: this.context.t('importAccount'),
+    }),
+    h(Item, {
+      onClick: () => {
+        toggleAccountMenu()
+        history.push(CONNECT_ACCOUNT_ROUTE)
+      },
+      icon: h('img.account-menu__item-icon', { src: 'images/connect-icon.svg' }),
+      text: this.context.t('connectAccount'),
     }),
     h(Divider),
     h(Item, {

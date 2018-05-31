@@ -28,7 +28,6 @@
 
     &__tab {
       height: 54px;
-      width: 75px;
       padding: 15px 10px;
       color: $dusty-gray;
       font-family: Roboto;
@@ -36,10 +35,6 @@
       line-height: 24px;
       text-align: center;
       cursor: pointer;
-    }
-
-    &__tab:first-of-type {
-      margin-right: 20px;
     }
 
     &__tab:hover {

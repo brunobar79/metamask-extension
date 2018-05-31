@@ -8,40 +8,65 @@ const { getCurrentViewContext } = require('../../../selectors')
 const classnames = require('classnames')
 const NewAccountCreateForm = require('./new-account')
 const NewAccountImportForm = require('./import-account')
-const { NEW_ACCOUNT_ROUTE, IMPORT_ACCOUNT_ROUTE } = require('../../../routes')
+const ConnectAccountForm = require('./connect-account')
+const { NEW_ACCOUNT_ROUTE, IMPORT_ACCOUNT_ROUTE, CONNECT_ACCOUNT_ROUTE } = require('../../../routes')
 
 class CreateAccountPage extends Component {
   renderTabs () {
     const { history, location } = this.props
 
-    return h('div.new-account__tabs', [
-      h('div.new-account__tabs__tab', {
-        className: classnames('new-account__tabs__tab', {
-          'new-account__tabs__selected': matchPath(location.pathname, {
-            path: NEW_ACCOUNT_ROUTE, exact: true,
+    return h("div.new-account__tabs", [
+      h(
+        "div.new-account__tabs__tab",
+        {
+          className: classnames("new-account__tabs__tab", {
+            "new-account__tabs__selected": matchPath(location.pathname, {
+              path: NEW_ACCOUNT_ROUTE,
+              exact: true
+            })
           }),
-        }),
-        onClick: () => history.push(NEW_ACCOUNT_ROUTE),
-      }, 'Create'),
+          onClick: () => history.push(NEW_ACCOUNT_ROUTE)
+        },
+        this.context.t("create")
+      ),
 
-      h('div.new-account__tabs__tab', {
-        className: classnames('new-account__tabs__tab', {
-          'new-account__tabs__selected': matchPath(location.pathname, {
-            path: IMPORT_ACCOUNT_ROUTE, exact: true,
+      h(
+        "div.new-account__tabs__tab",
+        {
+          className: classnames("new-account__tabs__tab", {
+            "new-account__tabs__selected": matchPath(location.pathname, {
+              path: IMPORT_ACCOUNT_ROUTE,
+              exact: true
+            })
           }),
-        }),
-        onClick: () => history.push(IMPORT_ACCOUNT_ROUTE),
-      }, 'Import'),
-    ])
+          onClick: () => history.push(IMPORT_ACCOUNT_ROUTE)
+        },
+        this.context.t("import")
+      ),
+
+      h(
+        "div.new-account__tabs__tab",
+        {
+          className: classnames("new-account__tabs__tab", {
+            "new-account__tabs__selected": matchPath(location.pathname, {
+              path: CONNECT_ACCOUNT_ROUTE,
+              exact: true
+            })
+          }),
+          onClick: () => history.push(CONNECT_ACCOUNT_ROUTE)
+        },
+        this.context.t("connect")
+      )
+    ]);
   }
 
   render () {
-    return h('div.new-account', {}, [
-      h('div.new-account__header', [
-        h('div.new-account__title', 'New Account'),
-        this.renderTabs(),
+    return h("div.new-account", {}, [
+      h("div.new-account__header", [
+        h("div.new-account__title", "New Account"),
+        this.renderTabs()
       ]),
-      h('div.new-account__form', [
+      h("div.new-account__form", [
         h(Switch, [
           h(Route, {
             exact: true,
@@ -53,15 +78,24 @@ class CreateAccountPage extends Component {
             path: IMPORT_ACCOUNT_ROUTE,
             component: NewAccountImportForm,
           }),
-        ]),
-      ]),
-    ])
+          h(Route, {
+            exact: true,
+            path: CONNECT_ACCOUNT_ROUTE,
+            component: ConnectAccountForm,
+          })
+        ])
+      ])
+    ]);
   }
 }
 
 CreateAccountPage.propTypes = {
   location: PropTypes.object,
   history: PropTypes.object,
+}
+
+CreateAccountPage.contextTypes = {
+  t: PropTypes.func,
 }
 
 const mapStateToProps = state => ({
