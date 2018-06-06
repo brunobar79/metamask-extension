@@ -68,7 +68,8 @@
     "message": "BETA"
   },
   "betweenMinAndMax": {
-    "message": "must be greater than or equal to $1 and less than or equal to $2.",
+    "message":
+      "must be greater than or equal to $1 and less than or equal to $2.",
     "description": "helper for inputting hex as decimal input"
   },
   "blockiesIdenticon": {
@@ -87,7 +88,8 @@
     "message": "Buy on Coinbase"
   },
   "buyCoinbaseExplainer": {
-    "message": "Coinbase is the world’s most popular way to buy and sell bitcoin, ethereum, and litecoin."
+    "message":
+      "Coinbase is the world’s most popular way to buy and sell bitcoin, ethereum, and litecoin."
   },
   "ok": {
     "message": "Ok"
@@ -104,8 +106,8 @@
   "close": {
     "message": "Close"
   },
-  "connectAccount": {
-    "message": "Connect Account"
+  "connectHardware": {
+    "message": "Connect Hardware"
   },
   "connect": {
     "message": "Connect"

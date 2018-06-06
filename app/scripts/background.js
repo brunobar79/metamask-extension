@@ -31,7 +31,7 @@ const {
   ENVIRONMENT_TYPE_FULLSCREEN,
 } = require('./lib/enums')
 
-const STORAGE_KEY = 'metamask-config'
+const STORAGE_KEY = 'metamask-config';
 const METAMASK_DEBUG = process.env.METAMASK_DEBUG
 
 log.setDefaultLevel(process.env.METAMASK_DEBUG ? 'debug' : 'warn')
@@ -171,9 +171,10 @@ async function loadStateFromPersistence () {
 
   // read from disk
   // first from preferred, async API:
-  versionedData = (await localStore.get()) ||
-                  diskStore.getState() ||
-                  migrator.generateInitialState(firstTimeState)
+  versionedData =
+    (await localStore.get()) ||
+    diskStore.getState() ||
+    migrator.generateInitialState(firstTimeState)
 
   // check if somehow state is empty
   // this should never happen but new error reporting suggests that it has
@@ -186,10 +187,13 @@ async function loadStateFromPersistence () {
       // we were able to recover (though it might be old)
       versionedData = diskStoreState
       const vaultStructure = getObjStructure(versionedData)
-      raven.captureMessage('MetaMask - Empty vault found - recovered from diskStore', {
-        // "extra" key is required by Sentry
-        extra: { vaultStructure },
-      })
+      raven.captureMessage(
+        'MetaMask - Empty vault found - recovered from diskStore',
+        {
+          // "extra" key is required by Sentry
+          extra: { vaultStructure },
+        }
+      )
     } else {
       // unable to recover, clear state
       versionedData = migrator.generateInitialState(firstTimeState)
@@ -198,7 +202,7 @@ async function loadStateFromPersistence () {
   }
 
   // report migration errors to sentry
-  migrator.on('error', (err) => {
+  migrator.on('error', err => {
     // get vault structure without secrets
     const vaultStructure = getObjStructure(versionedData)
     raven.captureException(err, {
@@ -274,7 +278,7 @@ function setupController (initState, initLangCode) {
     debounce(1000),
     storeTransform(versionifyData),
     storeTransform(persistData),
-    (error) => {
+    error => {
       log.error('MetaMask - Persistence pipeline failed', error)
     }
   )
@@ -297,8 +301,7 @@ function setupController (initState, initLangCode) {
       throw new Error('MetaMask - updated state does not have data', state)
     }
     if (localStore.isSupported) {
-      localStore.set(state)
-      .catch((err) => {
+      localStore.set(state).catch(err => {
         log.error('error setting state in local store:', err)
       })
     }
@@ -318,8 +321,12 @@ function setupController (initState, initLangCode) {
   }
 
   const isClientOpenStatus = () => {
-    return popupIsOpen || Boolean(Object.keys(openMetamaskTabsIDs).length) || notificationIsOpen
-  }
+    return (
+      popupIsOpen ||
+      Boolean(Object.keys(openMetamaskTabsIDs).length) ||
+      notificationIsOpen
+    )
+  };
 
   /**
    * A runtime.Port object, as provided by the browser:
@@ -376,7 +383,7 @@ function setupController (initState, initLangCode) {
   }
 
   // communication with page or other extension
-  function connectExternal(remotePort) {
+  function connectExternal (remotePort) {
     const originDomain = urlUtil.parse(remotePort.sender.url).hostname
     const portStream = new PortStream(remotePort)
     controller.setupUntrustedCommunication(portStream, originDomain)
@@ -396,12 +403,18 @@ function setupController (initState, initLangCode) {
    * The number reflects the current number of pending transactions or message signatures needing user approval.
    */
   function updateBadge () {
-    var label = ''
+    var label = '';
     var unapprovedTxCount = controller.txController.getUnapprovedTxCount()
     var unapprovedMsgCount = controller.messageManager.unapprovedMsgCount
-    var unapprovedPersonalMsgs = controller.personalMessageManager.unapprovedPersonalMsgCount
-    var unapprovedTypedMsgs = controller.typedMessageManager.unapprovedTypedMessagesCount
-    var count = unapprovedTxCount + unapprovedMsgCount + unapprovedPersonalMsgs + unapprovedTypedMsgs
+    var unapprovedPersonalMsgs =
+      controller.personalMessageManager.unapprovedPersonalMsgCount
+    var unapprovedTypedMsgs =
+      controller.typedMessageManager.unapprovedTypedMessagesCount
+    var count =
+      unapprovedTxCount +
+      unapprovedMsgCount +
+      unapprovedPersonalMsgs +
+      unapprovedTypedMsgs
     if (count) {
       label = String(count)
     }
@@ -421,7 +434,9 @@ function setupController (initState, initLangCode) {
  */
 function triggerUi () {
   extension.tabs.query({ active: true }, tabs => {
-    const currentlyActiveMetamaskTab = Boolean(tabs.find(tab => openMetamaskTabsIDs[tab.id]))
+    const currentlyActiveMetamaskTab = Boolean(
+      tabs.find(tab => openMetamaskTabsIDs[tab.id])
+    )
     if (!popupIsOpen && !currentlyActiveMetamaskTab && !notificationIsOpen) {
       notificationManager.showPopup()
     }
@@ -430,7 +445,7 @@ function triggerUi () {
 
 // On first install, open a window to MetaMask website to how-it-works.
 extension.runtime.onInstalled.addListener(function (details) {
-  if ((details.reason === 'install') && (!METAMASK_DEBUG)) {
-    extension.tabs.create({url: 'https://metamask.io/#how-it-works'})
+  if (details.reason === 'install' && !METAMASK_DEBUG) {
+    extension.tabs.create({ url: 'https://metamask.io/#how-it-works' })
   }
 })

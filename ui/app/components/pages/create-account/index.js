@@ -8,65 +8,69 @@ const { getCurrentViewContext } = require('../../../selectors')
 const classnames = require('classnames')
 const NewAccountCreateForm = require('./new-account')
 const NewAccountImportForm = require('./import-account')
-const ConnectAccountForm = require('./connect-account')
-const { NEW_ACCOUNT_ROUTE, IMPORT_ACCOUNT_ROUTE, CONNECT_ACCOUNT_ROUTE } = require('../../../routes')
+const ConnectHardwareForm = require('./connect-hardware')
+const {
+  NEW_ACCOUNT_ROUTE,
+  IMPORT_ACCOUNT_ROUTE,
+  CONNECT_HARDWARE_ROUTE,
+} = require('../../../routes')
 
 class CreateAccountPage extends Component {
   renderTabs () {
     const { history, location } = this.props
 
-    return h("div.new-account__tabs", [
+    return h('div.new-account__tabs', [
       h(
-        "div.new-account__tabs__tab",
+        'div.new-account__tabs__tab',
         {
-          className: classnames("new-account__tabs__tab", {
-            "new-account__tabs__selected": matchPath(location.pathname, {
+          className: classnames('new-account__tabs__tab', {
+            'new-account__tabs__selected': matchPath(location.pathname, {
               path: NEW_ACCOUNT_ROUTE,
-              exact: true
-            })
+              exact: true,
+            }),
           }),
-          onClick: () => history.push(NEW_ACCOUNT_ROUTE)
+          onClick: () => history.push(NEW_ACCOUNT_ROUTE),
         },
-        this.context.t("create")
+        this.context.t('create')
       ),
 
       h(
-        "div.new-account__tabs__tab",
+        'div.new-account__tabs__tab',
         {
-          className: classnames("new-account__tabs__tab", {
-            "new-account__tabs__selected": matchPath(location.pathname, {
+          className: classnames('new-account__tabs__tab', {
+            'new-account__tabs__selected': matchPath(location.pathname, {
               path: IMPORT_ACCOUNT_ROUTE,
-              exact: true
-            })
+              exact: true,
+            }),
           }),
-          onClick: () => history.push(IMPORT_ACCOUNT_ROUTE)
+          onClick: () => history.push(IMPORT_ACCOUNT_ROUTE),
         },
-        this.context.t("import")
+        this.context.t('import')
       ),
 
       h(
-        "div.new-account__tabs__tab",
+        'div.new-account__tabs__tab',
         {
-          className: classnames("new-account__tabs__tab", {
-            "new-account__tabs__selected": matchPath(location.pathname, {
-              path: CONNECT_ACCOUNT_ROUTE,
-              exact: true
-            })
+          className: classnames('new-account__tabs__tab', {
+            'new-account__tabs__selected': matchPath(location.pathname, {
+              path: CONNECT_HARDWARE_ROUTE,
+              exact: true,
+            }),
           }),
-          onClick: () => history.push(CONNECT_ACCOUNT_ROUTE)
+          onClick: () => history.push(CONNECT_HARDWARE_ROUTE),
         },
-        this.context.t("connect")
-      )
-    ]);
+        this.context.t('connect')
+      ),
+    ])
   }
 
   render () {
-    return h("div.new-account", {}, [
-      h("div.new-account__header", [
-        h("div.new-account__title", "New Account"),
-        this.renderTabs()
+    return h('div.new-account', {}, [
+      h('div.new-account__header', [
+        h('div.new-account__title', 'New Account'),
+        this.renderTabs(),
       ]),
-      h("div.new-account__form", [
+      h('div.new-account__form', [
         h(Switch, [
           h(Route, {
             exact: true,
@@ -80,12 +84,12 @@ class CreateAccountPage extends Component {
           }),
           h(Route, {
             exact: true,
-            path: CONNECT_ACCOUNT_ROUTE,
-            component: ConnectAccountForm,
-          })
-        ])
-      ])
-    ]);
+            path: CONNECT_HARDWARE_ROUTE,
+            component: ConnectHardwareForm,
+          }),
+        ]),
+      ]),
+    ])
   }
 }
 
@@ -104,12 +108,16 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   displayForm: form => dispatch(actions.setNewAccountForm(form)),
-  showQrView: (selected, identity) => dispatch(actions.showQrView(selected, identity)),
+  showQrView: (selected, identity) =>
+    dispatch(actions.showQrView(selected, identity)),
   showExportPrivateKeyModal: () => {
     dispatch(actions.showModal({ name: 'EXPORT_PRIVATE_KEY' }))
   },
   hideModal: () => dispatch(actions.hideModal()),
-  setAccountLabel: (address, label) => dispatch(actions.setAccountLabel(address, label)),
+  setAccountLabel: (address, label) =>
+    dispatch(actions.setAccountLabel(address, label)),
 })
 
-module.exports = connect(mapStateToProps, mapDispatchToProps)(CreateAccountPage)
+module.exports = connect(mapStateToProps, mapDispatchToProps)(
+  CreateAccountPage
+)

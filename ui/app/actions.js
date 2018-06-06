@@ -75,6 +75,7 @@ var actions = {
   addNewKeyring,
   importNewAccount,
   addNewAccount,
+  connectHardware,
   NEW_ACCOUNT_SCREEN: 'NEW_ACCOUNT_SCREEN',
   navigateToNewAccountScreen,
   resetAccount,
@@ -231,12 +232,12 @@ var actions = {
   showSubLoadingIndication: showSubLoadingIndication,
   HIDE_SUB_LOADING_INDICATION: 'HIDE_SUB_LOADING_INDICATION',
   hideSubLoadingIndication: hideSubLoadingIndication,
-// QR STUFF:
+  // QR STUFF:
   SHOW_QR: 'SHOW_QR',
   showQrView: showQrView,
   reshowQrCode: reshowQrCode,
   SHOW_QR_VIEW: 'SHOW_QR_VIEW',
-// FORGOT PASSWORD:
+  // FORGOT PASSWORD:
   BACK_TO_INIT_MENU: 'BACK_TO_INIT_MENU',
   goBackToInitView: goBackToInitView,
   RECOVERY_IN_PROGRESS: 'RECOVERY_IN_PROGRESS',
@@ -338,7 +339,7 @@ function tryUnlockMetamask (password) {
         dispatch(actions.hideLoadingIndication())
         return Promise.reject(err)
       })
-  }
+  };
 }
 
 function transitionForward () {
@@ -370,11 +371,11 @@ function confirmSeedWords () {
         resolve(account)
       })
     })
-  }
+  };
 }
 
 function createNewVaultAndRestore (password, seed) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.createNewVaultAndRestore`)
 
@@ -396,7 +397,7 @@ function createNewVaultAndRestore (password, seed) {
         dispatch(actions.displayWarning(err.message))
         dispatch(actions.hideLoadingIndication())
       })
-  }
+  };
 }
 
 function createNewVaultAndKeychain (password) {
@@ -413,7 +414,7 @@ function createNewVaultAndKeychain (password) {
 
         log.debug(`background.placeSeedWords`)
 
-        background.placeSeedWords((err) => {
+        background.placeSeedWords(err => {
           if (err) {
             dispatch(actions.displayWarning(err.message))
             return reject(err)
@@ -426,7 +427,7 @@ function createNewVaultAndKeychain (password) {
       .then(() => forceUpdateMetamaskState(dispatch))
       .then(() => dispatch(actions.hideLoadingIndication()))
       .catch(() => dispatch(actions.hideLoadingIndication()))
-  }
+  };
 }
 
 function revealSeedConfirmation () {
@@ -483,7 +484,7 @@ function requestRevealSeed (password) {
         })
       })
     })
-  }
+  };
 }
 
 function requestRevealSeedWords (password) {
@@ -521,28 +522,34 @@ function resetAccount () {
         resolve(account)
       })
     })
-  }
+  };
 }
 
 function addNewKeyring (type, opts) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.addNewKeyring`)
-    background.addNewKeyring(type, opts, (err) => {
+    background.addNewKeyring(type, opts, err => {
       dispatch(actions.hideLoadingIndication())
       if (err) return dispatch(actions.displayWarning(err.message))
       dispatch(actions.showAccountsPage())
     })
-  }
+  };
 }
 
 function importNewAccount (strategy, args) {
-  return async (dispatch) => {
+  return async dispatch => {
     let newState
-    dispatch(actions.showLoadingIndication('This may take a while, please be patient.'))
+    dispatch(
+      actions.showLoadingIndication('This may take a while, please be patient.')
+    )
     try {
       log.debug(`background.importAccountWithStrategy`)
-      await pify(background.importAccountWithStrategy).call(background, strategy, args)
+      await pify(background.importAccountWithStrategy).call(
+        background,
+        strategy,
+        args
+      )
       log.debug(`background.getState`)
       newState = await pify(background.getState).call(background)
     } catch (err) {
@@ -557,7 +564,7 @@ function importNewAccount (strategy, args) {
       value: newState.selectedAddress,
     })
     return newState
-  }
+  };
 }
 
 function navigateToNewAccountScreen () {
@@ -572,12 +579,14 @@ function addNewAccount () {
     const oldIdentities = getState().metamask.identities
     dispatch(actions.showLoadingIndication())
     return new Promise((resolve, reject) => {
-      background.addNewAccount((err, { identities: newIdentities}) => {
+      background.addNewAccount((err, { identities: newIdentities }) => {
         if (err) {
           dispatch(actions.displayWarning(err.message))
           return reject(err)
         }
-        const newAccountAddress = Object.keys(newIdentities).find(address => !oldIdentities[address])
+        const newAccountAddress = Object.keys(newIdentities).find(
+          address => !oldIdentities[address]
+        )
 
         dispatch(actions.hideLoadingIndication())
 
@@ -585,7 +594,29 @@ function addNewAccount () {
         return resolve(newAccountAddress)
       })
     })
-  }
+  };
+}
+
+function connectHardware (deviceName) {
+  log.debug(`background.connectHardware`, deviceName)
+  return (dispatch, getState) => {
+    dispatch(actions.showLoadingIndication())
+    return new Promise((resolve, reject) => {
+      background.connectHardware(deviceName, (err, accounts) => {
+        if (err) {
+          log.error(err)
+          dispatch(actions.displayWarning(err.message))
+          return reject(err)
+        }
+        log.debug('accounts found!', accounts)
+
+        dispatch(actions.hideLoadingIndication())
+
+        forceUpdateMetamaskState(dispatch)
+        return resolve(accounts)
+      })
+    })
+  };
 }
 
 function showInfoPage () {
@@ -595,7 +626,7 @@ function showInfoPage () {
 }
 
 function setCurrentCurrency (currencyCode) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.setCurrentCurrency`)
     background.setCurrentCurrency(currencyCode, (err, data) => {
@@ -613,12 +644,12 @@ function setCurrentCurrency (currencyCode) {
         },
       })
     })
-  }
+  };
 }
 
 function signMsg (msgData) {
   log.debug('action - signMsg')
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
 
     return new Promise((resolve, reject) => {
@@ -638,7 +669,7 @@ function signMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function signPersonalMsg (msgData) {
@@ -663,12 +694,12 @@ function signPersonalMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function signTypedMsg (msgData) {
   log.debug('action - signTypedMsg')
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
 
     return new Promise((resolve, reject) => {
@@ -688,11 +719,11 @@ function signTypedMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function signTx (txData) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     global.ethQuery.sendTransaction(txData, (err, data) => {
       dispatch(actions.hideLoadingIndication())
@@ -700,11 +731,11 @@ function signTx (txData) {
       dispatch(actions.hideWarning())
     })
     dispatch(actions.showConfTxPage({}))
-  }
+  };
 }
 
 function estimateGas (params = {}) {
-  return (dispatch) => {
+  return dispatch => {
     return new Promise((resolve, reject) => {
       global.ethQuery.estimateGas(params, (err, data) => {
         if (err) {
@@ -716,7 +747,7 @@ function estimateGas (params = {}) {
         return resolve(data)
       })
     })
-  }
+  };
 }
 
 function updateGasLimit (gasLimit) {
@@ -727,7 +758,7 @@ function updateGasLimit (gasLimit) {
 }
 
 function getGasPrice () {
-  return (dispatch) => {
+  return dispatch => {
     return new Promise((resolve, reject) => {
       global.ethQuery.gasPrice((err, data) => {
         if (err) {
@@ -739,7 +770,7 @@ function getGasPrice () {
         return resolve(data)
       })
     })
-  }
+  };
 }
 
 function updateGasPrice (gasPrice) {
@@ -818,39 +849,39 @@ function clearSend () {
   }
 }
 
-
 function sendTx (txData) {
   log.info(`actions - sendTx: ${JSON.stringify(txData.txParams)}`)
-  return (dispatch) => {
+  return dispatch => {
     log.debug(`actions calling background.approveTransaction`)
-    background.approveTransaction(txData.id, (err) => {
+    background.approveTransaction(txData.id, err => {
       if (err) {
         dispatch(actions.txError(err))
         return log.error(err.message)
       }
       dispatch(actions.completedTx(txData.id))
     })
-  }
+  };
 }
 
 function signTokenTx (tokenAddress, toAddress, amount, txData) {
   return dispatch => {
     dispatch(actions.showLoadingIndication())
     const token = global.eth.contract(abi).at(tokenAddress)
-    token.transfer(toAddress, ethUtil.addHexPrefix(amount), txData)
+    token
+      .transfer(toAddress, ethUtil.addHexPrefix(amount), txData)
       .catch(err => {
         dispatch(actions.hideLoadingIndication())
         dispatch(actions.displayWarning(err.message))
       })
     dispatch(actions.showConfTxPage({}))
-  }
+  };
 }
 
 function updateTransaction (txData) {
   log.info('actions: updateTx: ' + JSON.stringify(txData))
-  return (dispatch) => {
+  return dispatch => {
     log.debug(`actions calling background.updateTx`)
-    background.updateTransaction(txData, (err) => {
+    background.updateTransaction(txData, err => {
       dispatch(actions.hideLoadingIndication())
       dispatch(actions.updateTransactionParams(txData.id, txData.txParams))
       if (err) {
@@ -860,12 +891,12 @@ function updateTransaction (txData) {
       }
       dispatch(actions.showConfTxPage({ id: txData.id }))
     })
-  }
+  };
 }
 
 function updateAndApproveTx (txData) {
   log.info('actions: updateAndApproveTx: ' + JSON.stringify(txData))
-  return (dispatch) => {
+  return dispatch => {
     log.debug(`actions calling background.updateAndApproveTx`)
 
     return new Promise((resolve, reject) => {
@@ -885,7 +916,7 @@ function updateAndApproveTx (txData) {
         resolve(txData)
       })
     })
-  }
+  };
 }
 
 function completedTx (id) {
@@ -928,7 +959,7 @@ function cancelMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function cancelPersonalMsg (msgData) {
@@ -949,7 +980,7 @@ function cancelPersonalMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function cancelTypedMsg (msgData) {
@@ -970,7 +1001,7 @@ function cancelTypedMsg (msgData) {
         return resolve(msgData)
       })
     })
-  }
+  };
 }
 
 function cancelTx (txData) {
@@ -983,18 +1014,18 @@ function cancelTx (txData) {
         resolve(txData)
       })
     })
-  }
+  };
 }
 
 function cancelAllTx (txsData) {
-  return (dispatch) => {
+  return dispatch => {
     txsData.forEach((txData, i) => {
       background.cancelTransaction(txData.id, () => {
         dispatch(actions.completedTx(txData.id))
         i === txsData.length - 1 ? dispatch(actions.goHome()) : null
       })
     })
-  }
+  };
 }
 //
 // initialize screen
@@ -1013,13 +1044,13 @@ function showRestoreVault () {
 }
 
 function markPasswordForgotten () {
-  return (dispatch) => {
+  return dispatch => {
     return background.markPasswordForgotten(() => {
       dispatch(actions.hideLoadingIndication())
       dispatch(actions.forgotPassword())
       forceUpdateMetamaskState(dispatch)
     })
-  }
+  };
 }
 
 function unMarkPasswordForgotten () {
@@ -1029,9 +1060,8 @@ function unMarkPasswordForgotten () {
         dispatch(actions.forgotPassword(false))
         resolve()
       })
-    })
-      .then(() => forceUpdateMetamaskState(dispatch))
-  }
+    }).then(() => forceUpdateMetamaskState(dispatch))
+  };
 }
 
 function forgotPassword (forgotPasswordState = true) {
@@ -1152,7 +1182,7 @@ const backgroundSetLocked = () => {
       resolve()
     })
   })
-}
+};
 
 const updateMetamaskStateFromBackground = () => {
   log.debug(`background.getState`)
@@ -1166,7 +1196,7 @@ const updateMetamaskStateFromBackground = () => {
       resolve(newState)
     })
   })
-}
+};
 
 function lockMetamask () {
   log.debug(`background.setLocked`)
@@ -1189,12 +1219,15 @@ function lockMetamask () {
         dispatch(actions.hideLoadingIndication())
         dispatch({ type: actions.LOCK_METAMASK })
       })
-  }
+  };
 }
 
 function setCurrentAccountTab (newTabName) {
   log.debug(`background.setCurrentAccountTab: ${newTabName}`)
-  return callBackgroundThenUpdateNoSpinner(background.setCurrentAccountTab, newTabName)
+  return callBackgroundThenUpdateNoSpinner(
+    background.setCurrentAccountTab,
+    newTabName
+  )
 }
 
 function setSelectedToken (tokenAddress) {
@@ -1205,23 +1238,23 @@ function setSelectedToken (tokenAddress) {
 }
 
 function setSelectedAddress (address) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.setSelectedAddress`)
-    background.setSelectedAddress(address, (err) => {
+    background.setSelectedAddress(address, err => {
       dispatch(actions.hideLoadingIndication())
       if (err) {
         return dispatch(actions.displayWarning(err.message))
       }
     })
-  }
+  };
 }
 
 function showAccountDetail (address) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.setSelectedAddress`)
-    background.setSelectedAddress(address, (err) => {
+    background.setSelectedAddress(address, err => {
       dispatch(actions.hideLoadingIndication())
       if (err) {
         return dispatch(actions.displayWarning(err.message))
@@ -1232,7 +1265,7 @@ function showAccountDetail (address) {
       })
       dispatch(actions.setSelectedToken())
     })
-  }
+  };
 }
 
 function backToAccountDetail (address) {
@@ -1248,7 +1281,7 @@ function showAccountsPage () {
   }
 }
 
-function showConfTxPage ({transForward = true, id}) {
+function showConfTxPage ({ transForward = true, id }) {
   return {
     type: actions.SHOW_CONF_TX_PAGE,
     transForward,
@@ -1297,7 +1330,7 @@ function showAddTokenPage (transitionForward = true) {
 }
 
 function addToken (address, symbol, decimals) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     return new Promise((resolve, reject) => {
       background.addToken(address, symbol, decimals, (err, tokens) => {
@@ -1310,11 +1343,11 @@ function addToken (address, symbol, decimals) {
         resolve(tokens)
       })
     })
-  }
+  };
 }
 
 function removeToken (address) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     return new Promise((resolve, reject) => {
       background.removeToken(address, (err, tokens) => {
@@ -1327,24 +1360,28 @@ function removeToken (address) {
         resolve(tokens)
       })
     })
-  }
+  };
 }
 
 function addTokens (tokens) {
   return dispatch => {
     if (Array.isArray(tokens)) {
-      dispatch(actions.setSelectedToken(getTokenAddressFromTokenObject(tokens[0])))
-      return Promise.all(tokens.map(({ address, symbol, decimals }) => (
-        dispatch(addToken(address, symbol, decimals))
-      )))
-    } else {
-      dispatch(actions.setSelectedToken(getTokenAddressFromTokenObject(tokens)))
+      dispatch(
+        actions.setSelectedToken(getTokenAddressFromTokenObject(tokens[0]))
+      )
       return Promise.all(
-        Object
-        .entries(tokens)
-        .map(([_, { address, symbol, decimals }]) => (
+        tokens.map(({ address, symbol, decimals }) =>
           dispatch(addToken(address, symbol, decimals))
-        ))
+        )
+      )
+    } else {
+      dispatch(
+        actions.setSelectedToken(getTokenAddressFromTokenObject(tokens))
+      )
+      return Promise.all(
+        Object.entries(tokens).map(([_, { address, symbol, decimals }]) =>
+          dispatch(addToken(address, symbol, decimals))
+        )
       )
     }
   }
@@ -1368,7 +1405,7 @@ function goBackToInitView () {
 //
 
 function markNoticeRead (notice) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.markNoticeRead`)
     return new Promise((resolve, reject) => {
@@ -1388,7 +1425,7 @@ function markNoticeRead (notice) {
         }
       })
     })
-  }
+  };
 }
 
 function showNotice (notice) {
@@ -1413,7 +1450,7 @@ function retryTransaction (txId) {
   log.debug(`background.retryTransaction`)
   let newTxId
 
-  return (dispatch) => {
+  return dispatch => {
     return new Promise((resolve, reject) => {
       background.retryTransaction(txId, (err, newState) => {
         if (err) {
@@ -1429,7 +1466,7 @@ function retryTransaction (txId) {
     })
       .then(newState => dispatch(actions.updateMetamaskState(newState)))
       .then(() => newTxId)
-  }
+  };
 }
 
 //
@@ -1437,18 +1474,19 @@ function retryTransaction (txId) {
 //
 
 function setProviderType (type) {
-  return (dispatch) => {
+  return dispatch => {
     log.debug(`background.setProviderType`, type)
     background.setProviderType(type, (err, result) => {
       if (err) {
         log.error(err)
-        return dispatch(self.displayWarning('Had a problem changing networks!'))
+        return dispatch(
+          self.displayWarning('Had a problem changing networks!')
+        )
       }
       dispatch(actions.updateProviderType(type))
       dispatch(actions.setSelectedToken())
     })
-
-  }
+  };
 }
 
 function updateProviderType (type) {
@@ -1459,29 +1497,31 @@ function updateProviderType (type) {
 }
 
 function setRpcTarget (newRpc) {
-  return (dispatch) => {
+  return dispatch => {
     log.debug(`background.setRpcTarget: ${newRpc}`)
     background.setCustomRpc(newRpc, (err, result) => {
       if (err) {
         log.error(err)
-        return dispatch(self.displayWarning('Had a problem changing networks!'))
+        return dispatch(
+          self.displayWarning('Had a problem changing networks!')
+        )
       }
       dispatch(actions.setSelectedToken())
     })
-  }
+  };
 }
 
 // Calls the addressBookController to add a new address.
 function addToAddressBook (recipient, nickname = '') {
   log.debug(`background.addToAddressBook`)
-  return (dispatch) => {
+  return dispatch => {
     background.setAddressBook(recipient, nickname, (err, result) => {
       if (err) {
         log.error(err)
         return dispatch(self.displayWarning('Address book failed to update'))
       }
     })
-  }
+  };
 }
 
 function useEtherscanProvider () {
@@ -1503,7 +1543,6 @@ function hideNetworkDropdown () {
     type: actions.NETWORK_DROPDOWN_CLOSE,
   }
 }
-
 
 function showModal (payload) {
   return {
@@ -1530,7 +1569,6 @@ function hideSidebar () {
     type: actions.SIDEBAR_CLOSE,
   }
 }
-
 
 function showLoadingIndication (message) {
   return {
@@ -1597,7 +1635,9 @@ function exportAccount (password, address) {
 
           if (err) {
             log.error(err)
-            dispatch(self.displayWarning('Had a problem exporting the account.'))
+            dispatch(
+              self.displayWarning('Had a problem exporting the account.')
+            )
             return reject(err)
           }
 
@@ -1608,7 +1648,7 @@ function exportAccount (password, address) {
         })
       })
     })
-  }
+  };
 }
 
 function exportAccountComplete () {
@@ -1625,12 +1665,12 @@ function showPrivateKey (key) {
 }
 
 function setAccountLabel (account, label) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.setAccountLabel`)
 
     return new Promise((resolve, reject) => {
-      background.setAccountLabel(account, label, (err) => {
+      background.setAccountLabel(account, label, err => {
         dispatch(actions.hideLoadingIndication())
 
         if (err) {
@@ -1646,7 +1686,7 @@ function setAccountLabel (account, label) {
         resolve(account)
       })
     })
-  }
+  };
 }
 
 function showSendPage () {
@@ -1662,13 +1702,13 @@ function showSendTokenPage () {
 }
 
 function buyEth (opts) {
-  return (dispatch) => {
+  return dispatch => {
     const url = getBuyEthUrl(opts)
     global.platform.openWindow({ url })
     dispatch({
       type: actions.BUY_ETH,
     })
-  }
+  };
 }
 
 function onboardingBuyEthView (address) {
@@ -1692,30 +1732,38 @@ function coinBaseSubview () {
 }
 
 function pairUpdate (coin) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showSubLoadingIndication())
     dispatch(actions.hideWarning())
-    shapeShiftRequest('marketinfo', {pair: `${coin.toLowerCase()}_eth`}, (mktResponse) => {
-      dispatch(actions.hideSubLoadingIndication())
-      if (mktResponse.error) return dispatch(actions.displayWarning(mktResponse.error))
-      dispatch({
-        type: actions.PAIR_UPDATE,
-        value: {
-          marketinfo: mktResponse,
-        },
-      })
-    })
-  }
+    shapeShiftRequest(
+      'marketinfo',
+      { pair: `${coin.toLowerCase()}_eth` },
+      mktResponse => {
+        dispatch(actions.hideSubLoadingIndication())
+        if (mktResponse.error) {
+          return dispatch(actions.displayWarning(mktResponse.error))
+        }
+        dispatch({
+          type: actions.PAIR_UPDATE,
+          value: {
+            marketinfo: mktResponse,
+          },
+        })
+      }
+    )
+  };
 }
 
 function shapeShiftSubview (network) {
-  var pair = 'btc_eth'
-  return (dispatch) => {
+  var pair = 'btc_eth';
+  return dispatch => {
     dispatch(actions.showSubLoadingIndication())
-    shapeShiftRequest('marketinfo', {pair}, (mktResponse) => {
-      shapeShiftRequest('getcoins', {}, (response) => {
+    shapeShiftRequest('marketinfo', { pair }, mktResponse => {
+      shapeShiftRequest('getcoins', {}, response => {
         dispatch(actions.hideSubLoadingIndication())
-        if (mktResponse.error) return dispatch(actions.displayWarning(mktResponse.error))
+        if (mktResponse.error) {
+          return dispatch(actions.displayWarning(mktResponse.error))
+        }
         dispatch({
           type: actions.SHAPESHIFT_SUBVIEW,
           value: {
@@ -1725,34 +1773,39 @@ function shapeShiftSubview (network) {
         })
       })
     })
-  }
+  };
 }
 
 function coinShiftRquest (data, marketData) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
-    shapeShiftRequest('shift', { method: 'POST', data}, (response) => {
+    shapeShiftRequest('shift', { method: 'POST', data }, response => {
       dispatch(actions.hideLoadingIndication())
-      if (response.error) return dispatch(actions.displayWarning(response.error))
+      if (response.error) {
+        return dispatch(actions.displayWarning(response.error))
+      }
       var message = `
         Deposit your ${response.depositType} to the address below:`
       log.debug(`background.createShapeShiftTx`)
       background.createShapeShiftTx(response.deposit, response.depositType)
-      dispatch(actions.showQrView(response.deposit, [message].concat(marketData)))
+      dispatch(
+        actions.showQrView(response.deposit, [message].concat(marketData))
+      )
     })
-  }
+  };
 }
 
 function buyWithShapeShift (data) {
-  return dispatch => new Promise((resolve, reject) => {
-    shapeShiftRequest('shift', { method: 'POST', data}, (response) => {
-      if (response.error) {
-        return reject(response.error)
-      }
-      background.createShapeShiftTx(response.deposit, response.depositType)
-      return resolve(response)
+  return dispatch =>
+    new Promise((resolve, reject) => {
+      shapeShiftRequest('shift', { method: 'POST', data }, response => {
+        if (response.error) {
+          return reject(response.error)
+        }
+        background.createShapeShiftTx(response.deposit, response.depositType)
+        return resolve(response)
+      })
     })
-  })
 }
 
 function showQrView (data, message) {
@@ -1765,31 +1818,37 @@ function showQrView (data, message) {
   }
 }
 function reshowQrCode (data, coin) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
-    shapeShiftRequest('marketinfo', {pair: `${coin.toLowerCase()}_eth`}, (mktResponse) => {
-      if (mktResponse.error) return dispatch(actions.displayWarning(mktResponse.error))
+    shapeShiftRequest(
+      'marketinfo',
+      { pair: `${coin.toLowerCase()}_eth` },
+      mktResponse => {
+        if (mktResponse.error) {
+          return dispatch(actions.displayWarning(mktResponse.error))
+        }
 
-      var message = [
-        `Deposit your ${coin} to the address below:`,
-        `Deposit Limit: ${mktResponse.limit}`,
-        `Deposit Minimum:${mktResponse.minimum}`,
-      ]
+        var message = [
+          `Deposit your ${coin} to the address below:`,
+          `Deposit Limit: ${mktResponse.limit}`,
+          `Deposit Minimum:${mktResponse.minimum}`,
+        ]
 
-      dispatch(actions.hideLoadingIndication())
-      return dispatch(actions.showQrView(data, message))
-      // return dispatch(actions.showModal({
-      //   name: 'SHAPESHIFT_DEPOSIT_TX',
-      //   Qr: { data, message },
-      // }))
-    })
-  }
+        dispatch(actions.hideLoadingIndication())
+        return dispatch(actions.showQrView(data, message))
+        // return dispatch(actions.showModal({
+        //   name: 'SHAPESHIFT_DEPOSIT_TX',
+        //   Qr: { data, message },
+        // }))
+      }
+    )
+  };
 }
 
 function shapeShiftRequest (query, options, cb) {
   var queryResponse, method
-  !options ? options = {} : null
-  options.method ? method = options.method : method = 'GET'
+  !options ? (options = {}) : null
+  options.method ? (method = options.method) : (method = 'GET')
 
   var requestListner = function (request) {
     try {
@@ -1797,14 +1856,18 @@ function shapeShiftRequest (query, options, cb) {
       cb ? cb(queryResponse) : null
       return queryResponse
     } catch (e) {
-      cb ? cb({error: e}) : null
+      cb ? cb({ error: e }) : null
       return e
     }
   }
 
   var shapShiftReq = new XMLHttpRequest()
   shapShiftReq.addEventListener('load', requestListner)
-  shapShiftReq.open(method, `https://shapeshift.io/${query}/${options.pair ? options.pair : ''}`, true)
+  shapShiftReq.open(
+    method,
+    `https://shapeshift.io/${query}/${options.pair ? options.pair : ''}`,
+    true
+  )
 
   if (options.method === 'POST') {
     var jsonObj = JSON.stringify(options.data)
@@ -1816,21 +1879,26 @@ function shapeShiftRequest (query, options, cb) {
 }
 
 function setFeatureFlag (feature, activated, notificationType) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     return new Promise((resolve, reject) => {
-      background.setFeatureFlag(feature, activated, (err, updatedFeatureFlags) => {
-        dispatch(actions.hideLoadingIndication())
-        if (err) {
-          dispatch(actions.displayWarning(err.message))
-          return reject(err)
+      background.setFeatureFlag(
+        feature,
+        activated,
+        (err, updatedFeatureFlags) => {
+          dispatch(actions.hideLoadingIndication())
+          if (err) {
+            dispatch(actions.displayWarning(err.message))
+            return reject(err)
+          }
+          dispatch(actions.updateFeatureFlags(updatedFeatureFlags))
+          notificationType &&
+            dispatch(actions.showModal({ name: notificationType }))
+          resolve(updatedFeatureFlags)
         }
-        dispatch(actions.updateFeatureFlags(updatedFeatureFlags))
-        notificationType && dispatch(actions.showModal({ name: notificationType }))
-        resolve(updatedFeatureFlags)
-      })
+      )
     })
-  }
+  };
 }
 
 function updateFeatureFlags (updatedFeatureFlags) {
@@ -1856,27 +1924,27 @@ function setMouseUserState (isMouseUser) {
 // If it errored, we show a warning.
 // If it didn't, we update the state.
 function callBackgroundThenUpdateNoSpinner (method, ...args) {
-  return (dispatch) => {
-    method.call(background, ...args, (err) => {
+  return dispatch => {
+    method.call(background, ...args, err => {
       if (err) {
         return dispatch(actions.displayWarning(err.message))
       }
       forceUpdateMetamaskState(dispatch)
     })
-  }
+  };
 }
 
 function callBackgroundThenUpdate (method, ...args) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
-    method.call(background, ...args, (err) => {
+    method.call(background, ...args, err => {
       dispatch(actions.hideLoadingIndication())
       if (err) {
         return dispatch(actions.displayWarning(err.message))
       }
       forceUpdateMetamaskState(dispatch)
     })
-  }
+  };
 }
 
 function forceUpdateMetamaskState (dispatch) {
@@ -1901,10 +1969,10 @@ function toggleAccountMenu () {
 }
 
 function setUseBlockie (val) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
     log.debug(`background.setUseBlockie`)
-    background.setUseBlockie(val, (err) => {
+    background.setUseBlockie(val, err => {
       dispatch(actions.hideLoadingIndication())
       if (err) {
         return dispatch(actions.displayWarning(err.message))
@@ -1914,25 +1982,24 @@ function setUseBlockie (val) {
       type: actions.SET_USE_BLOCKIE,
       value: val,
     })
-  }
+  };
 }
 
 function updateCurrentLocale (key) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(actions.showLoadingIndication())
-    fetchLocale(key)
-      .then((localeMessages) => {
-        log.debug(`background.setCurrentLocale`)
-        background.setCurrentLocale(key, (err) => {
-          dispatch(actions.hideLoadingIndication())
-          if (err) {
-            return dispatch(actions.displayWarning(err.message))
-          }
-          dispatch(actions.setCurrentLocale(key))
-          dispatch(actions.setLocaleMessages(localeMessages))
-        })
+    fetchLocale(key).then(localeMessages => {
+      log.debug(`background.setCurrentLocale`)
+      background.setCurrentLocale(key, err => {
+        dispatch(actions.hideLoadingIndication())
+        if (err) {
+          return dispatch(actions.displayWarning(err.message))
+        }
+        dispatch(actions.setCurrentLocale(key))
+        dispatch(actions.setLocaleMessages(localeMessages))
       })
-  }
+    })
+  };
 }
 
 function setCurrentLocale (key) {
@@ -1959,9 +2026,10 @@ function updateNetworkEndpointType (networkEndpointType) {
 function setPendingTokens (pendingTokens) {
   const { customToken = {}, selectedTokens = {} } = pendingTokens
   const { address, symbol, decimals } = customToken
-  const tokens = address && symbol && decimals
-    ? { ...selectedTokens, [address]: { ...customToken, isCustom: true } }
-    : selectedTokens
+  const tokens =
+    address && symbol && decimals
+      ? { ...selectedTokens, [address]: { ...customToken, isCustom: true } }
+      : selectedTokens
 
   return {
     type: actions.SET_PENDING_TOKENS,

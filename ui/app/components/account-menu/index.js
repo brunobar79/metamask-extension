@@ -6,7 +6,12 @@ const { withRouter } = require('react-router-dom')
 const PropTypes = require('prop-types')
 const h = require('react-hyperscript')
 const actions = require('../../actions')
-const { Menu, Item, Divider, CloseArea } = require('../dropdowns/components/menu')
+const {
+  Menu,
+  Item,
+  Divider,
+  CloseArea,
+} = require('../dropdowns/components/menu')
 const Identicon = require('../identicon')
 const { formatBalance } = require('../../util')
 const {
@@ -14,7 +19,7 @@ const {
   INFO_ROUTE,
   NEW_ACCOUNT_ROUTE,
   IMPORT_ACCOUNT_ROUTE,
-  CONNECT_ACCOUNT_ROUTE,
+  CONNECT_HARDWARE_ROUTE,
   DEFAULT_ROUTE,
 } = require('../../routes')
 
@@ -28,7 +33,9 @@ AccountMenu.contextTypes = {
 }
 
 inherits(AccountMenu, Component)
-function AccountMenu () { Component.call(this) }
+function AccountMenu () {
+  Component.call(this)
+}
 
 function mapStateToProps (state) {
   return {
@@ -77,17 +84,25 @@ AccountMenu.prototype.render = function () {
 
   return h(Menu, { className: 'account-menu', isShowing: isAccountMenuOpen }, [
     h(CloseArea, { onClick: toggleAccountMenu }),
-    h(Item, {
-      className: 'account-menu__header',
-    }, [
-      this.context.t('myAccounts'),
-      h('button.account-menu__logout-button', {
-        onClick: () => {
-          lockMetamask()
-          history.push(DEFAULT_ROUTE)
-        },
-      }, this.context.t('logout')),
-    ]),
+    h(
+      Item,
+      {
+        className: 'account-menu__header',
+      },
+      [
+        this.context.t('myAccounts'),
+        h(
+          'button.account-menu__logout-button',
+          {
+            onClick: () => {
+              lockMetamask()
+              history.push(DEFAULT_ROUTE)
+            },
+          },
+          this.context.t('logout')
+        ),
+      ]
+    ),
     h(Divider),
     h('div.account-menu__accounts', this.renderAccounts()),
     h(Divider),
@@ -96,7 +111,9 @@ AccountMenu.prototype.render = function () {
         toggleAccountMenu()
         history.push(NEW_ACCOUNT_ROUTE)
       },
-      icon: h('img.account-menu__item-icon', { src: 'images/plus-btn-white.svg' }),
+      icon: h('img.account-menu__item-icon', {
+        src: 'images/plus-btn-white.svg',
+      }),
       text: this.context.t('createAccount'),
     }),
     h(Item, {
@@ -104,16 +121,20 @@ AccountMenu.prototype.render = function () {
         toggleAccountMenu()
         history.push(IMPORT_ACCOUNT_ROUTE)
       },
-      icon: h('img.account-menu__item-icon', { src: 'images/import-account.svg' }),
+      icon: h('img.account-menu__item-icon', {
+        src: 'images/import-account.svg',
+      }),
       text: this.context.t('importAccount'),
     }),
     h(Item, {
       onClick: () => {
         toggleAccountMenu()
-        history.push(CONNECT_ACCOUNT_ROUTE)
+        history.push(CONNECT_HARDWARE_ROUTE)
       },
-      icon: h('img.account-menu__item-icon', { src: 'images/connect-icon.svg' }),
-      text: this.context.t('connectAccount'),
+      icon: h('img.account-menu__item-icon', {
+        src: 'images/connect-icon.svg',
+      }),
+      text: this.context.t('connectHardware'),
     }),
     h(Divider),
     h(Item, {
@@ -133,7 +154,7 @@ AccountMenu.prototype.render = function () {
       text: this.context.t('settings'),
     }),
   ])
-}
+};
 
 AccountMenu.prototype.renderAccounts = function () {
   const {
@@ -148,13 +169,17 @@ AccountMenu.prototype.renderAccounts = function () {
     const identity = identities[key]
     const isSelected = identity.address === selectedAddress
 
-    const balanceValue = accounts[key] ? accounts[key].balance : ''
-    const formattedBalance = balanceValue ? formatBalance(balanceValue, 6) : '...'
+    const balanceValue = accounts[key] ? accounts[key].balance : '';
+    const formattedBalance = balanceValue
+      ? formatBalance(balanceValue, 6)
+      : '...';
     const simpleAddress = identity.address.substring(2).toLowerCase()
 
-    const keyring = keyrings.find((kr) => {
-      return kr.accounts.includes(simpleAddress) ||
+    const keyring = keyrings.find(kr => {
+      return (
+        kr.accounts.includes(simpleAddress) ||
         kr.accounts.includes(identity.address)
+      )
     })
 
     return h(
@@ -165,13 +190,10 @@ AccountMenu.prototype.renderAccounts = function () {
           isSelected ? h('div.account-menu__check-mark-icon') : null,
         ]),
 
-        h(
-          Identicon,
-          {
-            address: identity.address,
-            diameter: 24,
-          },
-        ),
+        h(Identicon, {
+          address: identity.address,
+          diameter: 24,
+        }),
 
         h('div.account-menu__account-info', [
           h('div.account-menu__name', identity.name || ''),
@@ -179,15 +201,20 @@ AccountMenu.prototype.renderAccounts = function () {
         ]),
 
         this.indicateIfLoose(keyring),
-      ],
+      ]
     )
   })
-}
+};
 
 AccountMenu.prototype.indicateIfLoose = function (keyring) {
-  try { // Sometimes keyrings aren't loaded yet:
+  try {
+    // Sometimes keyrings aren't loaded yet:
     const type = keyring.type
-    const isLoose = type !== 'HD Key Tree'
-    return isLoose ? h('.keyring-label.allcaps', this.context.t('imported')) : null
-  } catch (e) { return }
+    const isLoose = type !== 'HD Key Tree';
+    return isLoose
+      ? h('.keyring-label.allcaps', this.context.t('imported'))
+      : null
+  } catch (e) {
+    return
+  }
 }
