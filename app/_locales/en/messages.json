@@ -68,8 +68,7 @@
     "message": "BETA"
   },
   "betweenMinAndMax": {
-    "message":
-      "must be greater than or equal to $1 and less than or equal to $2.",
+    "message": "must be greater than or equal to $1 and less than or equal to $2.",
     "description": "helper for inputting hex as decimal input"
   },
   "blockiesIdenticon": {
@@ -88,8 +87,7 @@
     "message": "Buy on Coinbase"
   },
   "buyCoinbaseExplainer": {
-    "message":
-      "Coinbase is the world’s most popular way to buy and sell bitcoin, ethereum, and litecoin."
+    "message": "Coinbase is the world’s most popular way to buy and sell bitcoin, ethereum, and litecoin."
   },
   "ok": {
     "message": "Ok"
@@ -545,6 +543,9 @@
   "networks": {
     "message": "Networks"
   },
+  "nevermind": {
+    "message": "Nevermind"
+  },
   "newAccount": {
     "message": "New Account"
   },
@@ -665,8 +666,14 @@
   "rejected": {
     "message": "Rejected"
   },
+  "reset": {
+    "message": "Reset"
+  },
   "resetAccount": {
     "message": "Reset Account"
+  },
+  "resetAccountDescription": {
+    "message": "Resetting your account will clear your transaction history."
   },
   "restoreFromSeed": {
     "message": "Restore account?"
@@ -933,8 +940,7 @@
     "message": "Welcome to the New UI (Beta)"
   },
   "uiWelcomeMessage": {
-    "message":
-      "You are now using the new Metamask UI. Take a look around, try out new features like sending tokens, and let us know if you have any issues."
+    "message": "You are now using the new Metamask UI."
   },
   "unapproved": {
     "message": "Unapproved"
