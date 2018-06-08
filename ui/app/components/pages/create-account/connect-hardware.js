@@ -31,7 +31,14 @@ class ConnectHardwareForm extends Component {
     this.props
       .connectHardware("trezor", page)
       .then(accounts => {
-        this.setState({ accounts: accounts });
+        if (accounts.length) {
+          const newState = { accounts: accounts };
+          if (this.state.selectedAccount === "") {
+            newState.selectedAccount = accounts[0].index;
+            log.debug("setting default state", newState.selectedAccount);
+          }
+          this.setState(newState);
+        }
       })
       .catch(e => {
         this.setState({ btnText: "Connect to Trezor" });
@@ -44,6 +51,8 @@ class ConnectHardwareForm extends Component {
   }
 
   handleRadioChange = e => {
+    log.debug("Selected account with index ", e.target.value);
+
     this.setState({
       selectedAccount: e.target.value
     });
@@ -54,6 +63,7 @@ class ConnectHardwareForm extends Component {
       return null;
     }
     log.debug("ACCOUNTS : ", this.state.accounts);
+    log.debug("SELECTED?", this.state.selectedAccount);
 
     return h("div.hw-account-list", [
       h("div.hw-account-list__title_wrapper", [
@@ -68,7 +78,7 @@ class ConnectHardwareForm extends Component {
               type: "radio",
               name: "selectedAccount",
               id: `address-${i}`,
-              value: i,
+              value: a.index,
               onChange: this.handleRadioChange
             }),
             h(
@@ -122,7 +132,7 @@ class ConnectHardwareForm extends Component {
     }
     const { history } = this.props;
 
-    h("div.new-account-create-form__buttons", {}, [
+    return h("div.new-account-create-form__buttons", {}, [
       h(
         "button.btn-default.btn--large.new-account-create-form__button",
         {
