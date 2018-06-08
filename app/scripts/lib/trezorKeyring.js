@@ -56,6 +56,32 @@ class TrezorKeyring extends EventEmitter {
     });
   }
 
+  async unlockAccount(index) {
+    return new Promise((resolve, reject) => {
+      return this.unlock()
+        .then(_ => {
+          const pathBase = "m";
+          const from = index;
+          const to = index + 1;
+
+          this.accounts = [];
+
+          for (let i = from; i < to; i++) {
+            const dkey = this.hdk.derive(`${pathBase}/${i}`);
+            const address = ethUtil
+              .publicToAddress(dkey.publicKey, true)
+              .toString("hex");
+            this.accounts.push(ethUtil.toChecksumAddress(address));
+            this.page = 0;
+          }
+          resolve();
+        })
+        .catch(e => {
+          reject(e);
+        });
+    });
+  }
+
   addAccounts(n = 1) {
     return new Promise((resolve, reject) => {
       this.unlock().then(_ => {

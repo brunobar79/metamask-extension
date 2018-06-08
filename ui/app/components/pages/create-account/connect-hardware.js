@@ -45,7 +45,7 @@ class ConnectHardwareForm extends Component {
       return Promise.reject({ error: "You need to select an account!" });
     }
     log.debug("should unlock account ", this.state.selectedAccount);
-    return Promise.resolve();
+    return this.props.unlockTrezorAccount(this.state.selectedAccount);
   }
 
   handleRadioChange = e => {
@@ -109,7 +109,7 @@ class ConnectHardwareForm extends Component {
     }
     return h("div.hw-list-pagination", [
       h(
-        "button.btn-default.hw-list-pagination__button",
+        "button.btn-primary.hw-list-pagination__button",
         {
           onClick: () => this.getPage(-1)
         },
@@ -117,7 +117,7 @@ class ConnectHardwareForm extends Component {
       ),
 
       h(
-        "button.btn-default.hw-list-pagination__button",
+        "button.btn-primary.hw-list-pagination__button",
         {
           onClick: () => this.getPage()
         },
@@ -159,28 +159,27 @@ class ConnectHardwareForm extends Component {
 
   renderError() {
     return this.state.error
-      ? h("span.error", { style: { margin: 12 } }, this.state.error)
+      ? h("span.error", { style: { marginBottom: 40 } }, this.state.error)
+      : null;
+  }
+
+  renderConnectButton() {
+    return !this.state.accounts.length
+      ? h(
+          "button.btn-primary.btn--large",
+          { onClick: () => this.connectToTrezor(), style: { margin: 12 } },
+          this.state.btnText
+        )
       : null;
   }
 
   render() {
     return h("div.new-account-create-form", [
-      !this.state.accounts.length
-        ? h(
-            "button.btn-primary.btn--large",
-            {
-              onClick: () => this.connectToTrezor(),
-              style: {
-                margin: 12
-              }
-            },
-            this.state.btnText
-          )
-        : null,
+      this.renderError(),
+      this.renderConnectButton(),
       this.renderAccounts(),
       this.renderPagination(),
-      this.renderButtons(),
-      this.renderError()
+      this.renderButtons()
     ]);
   }
 }
@@ -190,6 +189,7 @@ ConnectHardwareForm.propTypes = {
   showImportPage: PropTypes.func,
   showConnectPage: PropTypes.func,
   connectHardware: PropTypes.func,
+  unlockTrezorAccount: PropTypes.func,
   numberOfExistingAccounts: PropTypes.number,
   history: PropTypes.object,
   t: PropTypes.func
@@ -215,6 +215,9 @@ const mapDispatchToProps = dispatch => {
     hideModal: () => dispatch(actions.hideModal()),
     connectHardware: (deviceName, page) => {
       return dispatch(actions.connectHardware(deviceName, page));
+    },
+    unlockTrezorAccount: index => {
+      return dispatch(actions.unlockTrezorAccount(index));
     },
     showImportPage: () => dispatch(actions.showImportPage()),
     showConnectPage: () => dispatch(actions.showConnectPage())

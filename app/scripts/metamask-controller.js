@@ -375,6 +375,7 @@ module.exports = class MetamaskController extends EventEmitter {
       // primary HD keyring management
       addNewAccount: nodeify(this.addNewAccount, this),
       connectHardware: nodeify(this.connectHardware, this),
+      unlockTrezorAccount: nodeify(this.unlockTrezorAccount, this),
       placeSeedWords: this.placeSeedWords.bind(this),
       verifySeedPhrase: nodeify(this.verifySeedPhrase, this),
       clearSeedWordCache: this.clearSeedWordCache.bind(this),
@@ -578,7 +579,7 @@ module.exports = class MetamaskController extends EventEmitter {
   //
 
   /**
-   * Adds a new account to the default (first) HD seed phrase Keyring.
+   * Fetch account list from a trezor device.
    *
    * @returns {} keyState
    */
@@ -611,6 +612,36 @@ module.exports = class MetamaskController extends EventEmitter {
 
     //const { identities } = this.preferencesController.store.getState();
     //return { ...keyState, identities };
+  }
+
+  /**
+   * Imports an account from a trezor device.
+   *
+   * @returns {} keyState
+   */
+  async unlockTrezorAccount(index) {
+    const keyringController = this.keyringController;
+    const keyring = await keyringController.getKeyringsByType(
+      "Trezor Hardware Keyring"
+    )[0];
+    if (!keyring) {
+      throw new Error("MetamaskController - No Trezor Hardware Keyring found");
+    }
+
+    await keyring.unlockAccount(index);
+    const oldAccounts = await keyringController.getAccounts();
+    const keyState = await keyringController.addNewAccount(keyring);
+    const newAccounts = await keyringController.getAccounts();
+
+    this.preferencesController.setAddresses(newAccounts);
+    newAccounts.forEach(address => {
+      if (!oldAccounts.includes(address)) {
+        this.preferencesController.setSelectedAddress(address);
+      }
+    });
+
+    const { identities } = this.preferencesController.store.getState();
+    return { ...keyState, identities };
   }
 
   //
