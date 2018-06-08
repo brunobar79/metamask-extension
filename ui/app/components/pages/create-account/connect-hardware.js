@@ -32,12 +32,7 @@ class ConnectHardwareForm extends Component {
       .connectHardware("trezor", page)
       .then(accounts => {
         if (accounts.length) {
-          const newState = { accounts: accounts };
-          if (this.state.selectedAccount === "") {
-            newState.selectedAccount = accounts[0].index;
-            log.debug("setting default state", newState.selectedAccount);
-          }
-          this.setState(newState);
+          this.setState({ accounts: accounts });
         }
       })
       .catch(e => {
@@ -46,6 +41,9 @@ class ConnectHardwareForm extends Component {
   }
 
   unlockAccount() {
+    if (this.state.selectedAccount === "") {
+      return Promise.reject({ error: "You need to select an account!" });
+    }
     log.debug("should unlock account ", this.state.selectedAccount);
     return Promise.resolve();
   }
@@ -54,7 +52,8 @@ class ConnectHardwareForm extends Component {
     log.debug("Selected account with index ", e.target.value);
 
     this.setState({
-      selectedAccount: e.target.value
+      selectedAccount: e.target.value,
+      error: null
     });
   };
 
@@ -94,9 +93,10 @@ class ConnectHardwareForm extends Component {
             "a.hw-account-list__item__link",
             {
               href: genAccountLink(a.address, this.props.network),
-              target: "_blank"
+              target: "_blank",
+              title: this.context.t("etherscanView")
             },
-            "more"
+            h("img", { src: "images/popout.svg" })
           )
         ]);
       })
@@ -117,7 +117,7 @@ class ConnectHardwareForm extends Component {
       ),
 
       h(
-        "button.btn-primary.hw-list-pagination__button",
+        "button.btn-default.hw-list-pagination__button",
         {
           onClick: () => this.getPage()
         },
@@ -145,14 +145,22 @@ class ConnectHardwareForm extends Component {
         "button.btn-primary.btn--large.new-account-create-form__button",
         {
           onClick: () => {
-            this.unlockAccount(this.state.selectedAccount).then(() =>
-              history.push(DEFAULT_ROUTE)
-            );
+            this.unlockAccount(this.state.selectedAccount)
+              .then(() => history.push(DEFAULT_ROUTE))
+              .catch(e => {
+                this.setState({ error: e.error });
+              });
           }
         },
         [this.context.t("unlock")]
       )
     ]);
+  }
+
+  renderError() {
+    return this.state.error
+      ? h("span.error", { style: { margin: 12 } }, this.state.error)
+      : null;
   }
 
   render() {
@@ -172,17 +180,7 @@ class ConnectHardwareForm extends Component {
       this.renderAccounts(),
       this.renderPagination(),
       this.renderButtons(),
-      this.state.error
-        ? h(
-            "span.error",
-            {
-              style: {
-                margin: 12
-              }
-            },
-            this.state.error
-          )
-        : null
+      this.renderError()
     ]);
   }
 }

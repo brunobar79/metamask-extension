@@ -192,7 +192,19 @@
     font-size: 15px;
     flex-direction: row;
     display: flex;
-    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  &__item:nth-of-type(even) {
+    background-color: #fbfbfb;
+  }
+
+  &__item:nth-of-type(odd) {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  &__item:hover {
+    background-color: rgba(0, 0, 0, 0.06);
   }
 
   &__item__index {
@@ -220,15 +232,23 @@
   &__item__link {
     display: flex;
   }
+
+  &__item__link img {
+    width: 15px;
+    height: 15px;
+  }
 }
 
 .hw-list-pagination {
   display: flex;
-  flex: 1;
-  align-items: flex-end;
+  align-self: flex-end;
+  margin-top: 10px;
 
-  &&__button {
-    max-width: 50px;
+  &__button {
+    height: 25px;
+    flex: initial;
+    min-width: 90px;
+    font-size: 12px;
   }
 }
 
