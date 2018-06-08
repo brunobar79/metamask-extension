@@ -222,6 +222,16 @@
   }
 }
 
+.hw-list-pagination {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+
+  &&__button {
+    max-width: 50px;
+  }
+}
+
 .new-account-create-form {
   display: flex;
   flex-flow: column;

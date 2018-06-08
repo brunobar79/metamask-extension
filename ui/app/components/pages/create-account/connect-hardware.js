@@ -15,33 +15,7 @@ class ConnectHardwareForm extends Component {
       response: null,
       btnText: "Connect to Trezor", //Test
       selectedAccount: "",
-      accounts: [
-        {
-          index: 0,
-          address: "0x2419EB3D5E048f50D386f6217Cd5033eBfc36b83",
-          balance: 0
-        },
-        {
-          index: 1,
-          address: "0x37bD75826582532373D738F83b913C97447b0906",
-          balance: 0
-        },
-        {
-          index: 2,
-          address: "0xcB6e794c299e69Ab3feE57d3b112AaD0f77bD70a",
-          balance: 0
-        },
-        {
-          index: 3,
-          address: "0x0A1e7e329E14Dd61734d3182434582FC0A2F5e4E",
-          balance: 0
-        },
-        {
-          index: 4,
-          address: "0x759476e1BaBBeDa88d51aba92b0752a12e816ED9",
-          balance: 0
-        }
-      ]
+      accounts: []
     };
   }
 
@@ -50,10 +24,14 @@ class ConnectHardwareForm extends Component {
       return null;
     }
     this.setState({ btnText: "Connecting..." });
+    this.getPage();
+  }
+
+  getPage(page = 1) {
     this.props
-      .connectHardware("trezor")
+      .connectHardware("trezor", page)
       .then(accounts => {
-        this.setState({ accounts: accounts, btnText: "Connected to Trezor" });
+        this.setState({ accounts: accounts });
       })
       .catch(e => {
         this.setState({ btnText: "Connect to Trezor" });
@@ -75,6 +53,7 @@ class ConnectHardwareForm extends Component {
     if (!this.state.accounts.length) {
       return null;
     }
+    log.debug("ACCOUNTS : ", this.state.accounts);
 
     return h("div.hw-account-list", [
       h("div.hw-account-list__title_wrapper", [
@@ -114,12 +93,63 @@ class ConnectHardwareForm extends Component {
     ]);
   }
 
+  renderPagination() {
+    if (!this.state.accounts.length) {
+      return null;
+    }
+    return h("div.hw-list-pagination", [
+      h(
+        "button.btn-default.hw-list-pagination__button",
+        {
+          onClick: () => this.getPage(-1)
+        },
+        "< Prev"
+      ),
+
+      h(
+        "button.btn-primary.hw-list-pagination__button",
+        {
+          onClick: () => this.getPage()
+        },
+        "Next >"
+      )
+    ]);
+  }
+
+  renderButtons() {
+    if (!this.state.accounts.length) {
+      return null;
+    }
+    const { history } = this.props;
+
+    h("div.new-account-create-form__buttons", {}, [
+      h(
+        "button.btn-default.btn--large.new-account-create-form__button",
+        {
+          onClick: () => history.push(DEFAULT_ROUTE)
+        },
+        [this.context.t("cancel")]
+      ),
+
+      h(
+        "button.btn-primary.btn--large.new-account-create-form__button",
+        {
+          onClick: () => {
+            this.unlockAccount(this.state.selectedAccount).then(() =>
+              history.push(DEFAULT_ROUTE)
+            );
+          }
+        },
+        [this.context.t("unlock")]
+      )
+    ]);
+  }
+
   render() {
-    const { connectHardware, history } = this.props;
     return h("div.new-account-create-form", [
       !this.state.accounts.length
         ? h(
-            "button.btn-primary",
+            "button.btn-primary.btn--large",
             {
               onClick: () => this.connectToTrezor(),
               style: {
@@ -130,27 +160,8 @@ class ConnectHardwareForm extends Component {
           )
         : null,
       this.renderAccounts(),
-      h("div.new-account-create-form__buttons", {}, [
-        h(
-          "button.btn-default.btn--large.new-account-create-form__button",
-          {
-            onClick: () => history.push(DEFAULT_ROUTE)
-          },
-          [this.context.t("cancel")]
-        ),
-
-        h(
-          "button.btn-primary.btn--large.new-account-create-form__button",
-          {
-            onClick: () => {
-              this.unlockAccount(this.state.selectedAccount).then(() =>
-                history.push(DEFAULT_ROUTE)
-              );
-            }
-          },
-          [this.context.t("unlock")]
-        )
-      ]),
+      this.renderPagination(),
+      this.renderButtons(),
       this.state.error
         ? h(
             "span.error",
@@ -194,8 +205,8 @@ const mapDispatchToProps = dispatch => {
     toCoinbase: address =>
       dispatch(actions.buyEth({ network: "1", address, amount: 0 })),
     hideModal: () => dispatch(actions.hideModal()),
-    connectHardware: deviceName => {
-      return dispatch(actions.connectHardware(deviceName));
+    connectHardware: (deviceName, page) => {
+      return dispatch(actions.connectHardware(deviceName, page));
     },
     showImportPage: () => dispatch(actions.showImportPage()),
     showConnectPage: () => dispatch(actions.showConnectPage())

@@ -582,7 +582,7 @@ module.exports = class MetamaskController extends EventEmitter {
    *
    * @returns {} keyState
    */
-  async connectHardware(deviceName) {
+  async connectHardware(deviceName, page) {
     const keyringController = this.keyringController;
     const keyring = await keyringController.getKeyringsByType(
       "Trezor Hardware Keyring"
@@ -590,7 +590,12 @@ module.exports = class MetamaskController extends EventEmitter {
     if (!keyring) {
       throw new Error("MetamaskController - No Trezor Hardware Keyring found");
     }
-    let accounts = await keyring.getNextAccountSet();
+
+    let accounts =
+      page === -1
+        ? await keyring.getPrevAccountSet()
+        : await keyring.getNextAccountSet();
+
     return accounts;
 
     //const oldAccounts = await keyringController.getAccounts();

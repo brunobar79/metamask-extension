@@ -35,7 +35,7 @@ class TrezorKeyring extends EventEmitter {
   }
 
   unlock() {
-    // if (this.hdk.publicKey) return Promise.resolve();
+    if (this.hdk.publicKey) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
       TrezorConnect.getXPubKey(
@@ -74,7 +74,7 @@ class TrezorKeyring extends EventEmitter {
     });
   }
 
-  async getCurrentPage() {
+  async getPage() {
     return new Promise((resolve, reject) => {
       return this.unlock()
         .then(_ => {
@@ -89,7 +89,11 @@ class TrezorKeyring extends EventEmitter {
             const address = ethUtil
               .publicToAddress(dkey.publicKey, true)
               .toString("hex");
-            accounts[i] = ethUtil.toChecksumAddress(address);
+            accounts.push({
+              address: ethUtil.toChecksumAddress(address),
+              balance: 0,
+              index: i
+            });
           }
           resolve(accounts);
         })
@@ -101,12 +105,12 @@ class TrezorKeyring extends EventEmitter {
 
   async getPrevAccountSet() {
     this.page--;
-    return await this.getCurrentPage();
+    return await this.getPage();
   }
 
   async getNextAccountSet() {
     this.page++;
-    return await this.getCurrentPage();
+    return await this.getPage();
   }
 
   getAccounts() {
