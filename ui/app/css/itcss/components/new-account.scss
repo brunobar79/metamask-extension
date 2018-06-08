@@ -1,7 +1,7 @@
 .new-account {
   width: 376px;
-  background-color: #FFFFFF;
-  box-shadow: 0 0 7px 0 rgba(0,0,0,0.08);
+  background-color: #ffffff;
+  box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.08);
   z-index: 25;
   padding-bottom: 31px;
 
@@ -52,7 +52,7 @@
 
 .new-account-import-disclaimer {
   width: 120%;
-  background-color: #F4F9FC;
+  background-color: #f4f9fc;
   display: inline-block;
   align-items: center;
   padding: 20px 30px 20px;
@@ -84,9 +84,9 @@
   &__select {
     height: 54px;
     width: 210px;
-    border: 1px solid #D2D8DD;
+    border: 1px solid #d2d8dd;
     border-radius: 4px;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     display: flex;
     align-items: center;
 
@@ -150,6 +150,75 @@
     display: flex;
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+.hw-account-list {
+  display: flex;
+  flex: 1;
+  flex-flow: column;
+  width: 100%;
+
+  &__title_wrapper {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+  }
+
+  &__title {
+    margin-bottom: 23px;
+    align-self: flex-start;
+    color: $scorpion;
+    font-family: Roboto;
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: bold;
+    display: flex;
+    flex: 1;
+  }
+
+  &__device {
+    margin-bottom: 23px;
+    align-self: flex-end;
+    color: $scorpion;
+    font-family: Roboto;
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: normal;
+    display: flex;
+  }
+
+  &__item {
+    font-size: 15px;
+    flex-direction: row;
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  &__item__index {
+    display: flex;
+    margin-right: 20px;
+  }
+
+  &__item__radio {
+    display: flex;
+    flex: 1;
+  }
+
+  &__item__label {
+    margin-left: 10px;
+    display: flex;
+    flex: 1;
+  }
+
+  &__item__balance {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+  }
+
+  &__item__link {
+    display: flex;
   }
 }
 

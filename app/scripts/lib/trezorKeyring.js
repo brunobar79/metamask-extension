@@ -20,6 +20,8 @@ class TrezorKeyring extends EventEmitter {
     this.accounts = [];
     this.hdk = new HDKey();
     this.deserialize(opts);
+    this.page = 0;
+    this.perPage = 5;
   }
 
   serialize() {
@@ -27,8 +29,15 @@ class TrezorKeyring extends EventEmitter {
   }
 
   deserialize(opts = {}) {
+    this.hdPath = opts.hdPath || hdPathString;
+    this.accounts = opts.accounts || [];
+    return Promise.resolve();
+  }
+
+  unlock() {
+    // if (this.hdk.publicKey) return Promise.resolve();
+
     return new Promise((resolve, reject) => {
-      this.hdPath = opts.hdPath || hdPathString;
       TrezorConnect.getXPubKey(
         this.hdPath,
         response => {
@@ -47,31 +56,61 @@ class TrezorKeyring extends EventEmitter {
     });
   }
 
-  async addAccounts(n = 1) {
-    await this.lock.acquire();
-    try {
-      await this._checkCorrectTrezorAttached();
-      const l = this.accounts.length;
+  addAccounts(n = 1) {
+    return new Promise((resolve, reject) => {
+      this.unlock().then(_ => {
+        const l = this.accounts.length;
+        const pathBase = "m";
 
-      const pathBase = "m";
-
-      for (let i = l; i < l + n; i++) {
-        const dkey = this.hdk.derive(`${pathBase}/${i}`);
-        const address = ethUtil
-          .publicToAddress(dkey.publicKey, true)
-          .toString("hex");
-        this.accounts[i] = ethUtil.toChecksumAddress(address);
-        console.log();
-      }
-
-      return this.accounts.slice(l, l + n);
-    } finally {
-      await this.lock.release();
-    }
+        for (let i = l; i < l + n; i++) {
+          const dkey = this.hdk.derive(`${pathBase}/${i}`);
+          const address = ethUtil
+            .publicToAddress(dkey.publicKey, true)
+            .toString("hex");
+          this.accounts[i] = ethUtil.toChecksumAddress(address);
+        }
+        resolve(this.accounts.slice(l, l + n));
+      });
+    });
   }
 
-  async getAccounts() {
-    return this.accounts.slice();
+  async getCurrentPage() {
+    return new Promise((resolve, reject) => {
+      return this.unlock()
+        .then(_ => {
+          const pathBase = "m";
+          const from = this.page === 0 ? 0 : (this.page - 1) * this.perPage;
+          const to = from + this.perPage;
+
+          const accounts = [];
+
+          for (let i = from; i < to; i++) {
+            const dkey = this.hdk.derive(`${pathBase}/${i}`);
+            const address = ethUtil
+              .publicToAddress(dkey.publicKey, true)
+              .toString("hex");
+            accounts[i] = ethUtil.toChecksumAddress(address);
+          }
+          resolve(accounts);
+        })
+        .catch(e => {
+          reject(e);
+        });
+    });
+  }
+
+  async getPrevAccountSet() {
+    this.page--;
+    return await this.getCurrentPage();
+  }
+
+  async getNextAccountSet() {
+    this.page++;
+    return await this.getCurrentPage();
+  }
+
+  getAccounts() {
+    return Promise.resolve(this.accounts.slice());
   }
 
   // tx is an instance of the ethereumjs-transaction class.
@@ -174,6 +213,7 @@ class TrezorKeyring extends EventEmitter {
   }
 
   async _checkCorrectTrezorAttached() {
+    return true;
     /* Must be called with lock acquired
     if (this.accounts.length > 0) {
       const expectedFirstAccount = this.accounts[0]

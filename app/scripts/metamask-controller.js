@@ -583,16 +583,29 @@ module.exports = class MetamaskController extends EventEmitter {
    * @returns {} keyState
    */
   async connectHardware(deviceName) {
-    const keyring = await this.keyringController.addNewKeyring(
+    const keyringController = this.keyringController;
+    const keyring = await keyringController.getKeyringsByType(
       "Trezor Hardware Keyring"
-    );
-    const accounts = await keyring.getAccounts();
-    // update accounts in preferences controller
-    const allAccounts = await this.keyringController.getAccounts();
-    this.preferencesController.setAddresses(allAccounts);
-    // set new account as selected
-    await this.preferencesController.setSelectedAddress(accounts[0]);
+    )[0];
+    if (!keyring) {
+      throw new Error("MetamaskController - No Trezor Hardware Keyring found");
+    }
+    let accounts = await keyring.getNextAccountSet();
     return accounts;
+
+    //const oldAccounts = await keyringController.getAccounts();
+    //const keyState = await keyringController.addNewAccount(keyring);
+    //const newAccounts = await keyringController.getAccounts();
+
+    //this.preferencesController.setAddresses(newAccounts);
+    //newAccounts.forEach(address => {
+    //  if (!oldAccounts.includes(address)) {
+    //    this.preferencesController.setSelectedAddress(address);
+    //  }
+    //});
+
+    //const { identities } = this.preferencesController.store.getState();
+    //return { ...keyState, identities };
   }
 
   //

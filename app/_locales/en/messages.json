@@ -959,6 +959,9 @@
   "unknownNetworkId": {
     "message": "Unknown network ID"
   },
+  "unlock": {
+    "message": "Unlock"
+  },
   "unlockMessage": {
     "message": "The decentralized web awaits"
   },
